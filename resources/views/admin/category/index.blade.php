@@ -59,12 +59,12 @@
                                         <th>Id</th>
                                         <th>Category</th>
                                         <th>Status</th>
-                                        <th>Date Time</th>
+                                        <th>Updated</th>
                                         <th>Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    
+
                                 </tbody>
                             </table>
                         </div>
@@ -72,6 +72,37 @@
                 </div>
             </div>
         </div>
+    </div>
+    <!-- sample modal content -->
+    <div id="editModal" class="modal fade" tabindex="-1" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="myModalLabel">Edite Category</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="update-category-form">
+                        @csrf
+                        <input type="hidden" name="id" id="editId">
+                        <div class="mb-3">
+                            <label for="formrow-firstname-input" class="form-label">Category</label>
+                            <input type="text" class="form-control" id="category" name="category" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Status</label>
+                            <select name="status" class="form-select" id="statusq" required>
+
+                            </select>
+                        </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary waves-effect" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary waves-effect waves-light">Save changes</button>
+                </div>
+                </form>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
     </div>
 @endsection
 @section('script')
@@ -89,16 +120,19 @@
                     return nRow;
                 },
                 "bDestroy": true,
-                "ajax": "{{ url('get-categories') }}",
+                "ajax": "{{ route('get-categories') }}",
                 "columns": [{
                         data: 'id'
                     },
-                   
+
                     {
                         data: 'category'
                     },
                     {
                         data: 'status'
+                    },
+                    {
+                        data: 'date'
                     },
                     {
                         data: "action_edit",
@@ -112,8 +146,6 @@
 
             $('#new-category-form').on('submit', function(event) {
                 event.preventDefault();
-
-                // $('#pr-tags-error').text('');
                 $.ajax({
                     url: "{{ route('new-category') }}",
                     type: "POST",
@@ -123,11 +155,107 @@
                     processData: false,
                     success: function(response) {
                         $('#datatable').DataTable().ajax.reload();
-							$("#new-category-form")[0].reset();
+                        $("#new-category-form")[0].reset();
+                        Swal.fire({
+                            title: "Success!",
+                            text: response.success,
+                            icon: "success",
+                            showCancelButton: 0,
+                            confirmButtonColor: "#556ee6"
+                        });
                     },
-                    error: function(response) {
+                    error: function(response) {}
+                });
+            });
 
-                        // $('#pr-tags-error').text(response.responseJSON.errors.pr_tags);
+            $(document).on("click", ".editcategory", function(e) {
+                e.preventDefault();
+                Id = $(this).attr("data-id");
+                $.ajax({
+                    url: "{{ route('edit-category') }}",
+                    type: "POST",
+                    data: {
+                        "_token": "{{ csrf_token() }}",
+                        "id": Id
+                    },
+                    success: function(response) {
+                        console.log(response)
+                        $('#editId').val(response.id);
+                        $('#category').val(response.category);
+                        let html = '';
+                        if (response.status) {
+                            html = `<option value="1" selected>Active</option>`;
+                            html += `<option value="0" >Inactive</option>`;
+                        } else {
+                            html = `<option value="1" >Active</option>`;
+                            html += `<option value="0" selected>Inactive</option>`;
+                        }
+
+                        $('#statusq').html(html);
+                        $('#editModal').modal('show');
+                    }
+                });
+            });
+
+
+            $('#update-category-form').on('submit', function(event) {
+                event.preventDefault();
+                $.ajax({
+                    url: "{{ route('update-category') }}",
+                    type: "POST",
+                    data: new FormData(this),
+                    contentType: false,
+                    cache: false,
+                    processData: false,
+                    success: function(response) {
+                        $('#datatable').DataTable().ajax.reload();
+                        $('#editModal').modal('hide');
+                        $("#update-category-form")[0].reset();
+                        Swal.fire({
+                            title: "Success!",
+                            text: response.success,
+                            icon: "success",
+                            showCancelButton: 0,
+                            confirmButtonColor: "#556ee6"
+                        });
+                    },
+                    error: function(response) {}
+                });
+            });
+            
+            
+
+            $(document).on("click", ".deletecategory", function(e) {
+                e.preventDefault();
+                Id = $(this).attr("data-id");
+                Swal.fire({
+                    title: "Are you sure?",
+                    text: "You won't be able to revert this!",
+                    icon: "warning",
+                    showCancelButton: !0,
+                    confirmButtonText: "Yes, delete it!",
+                    cancelButtonText: "No, cancel!",
+                    confirmButtonClass: "btn btn-success mt-2",
+                    cancelButtonClass: "btn btn-danger ms-2 mt-2",
+                    buttonsStyling: !1
+                }).then(function(t) {
+                    if (t.value) {
+                        $.ajax({
+                            url: "{{ route('category-delete') }}",
+                            type: "POST",
+                            data: {
+                                "_token": "{{ csrf_token() }}",
+                                "id": Id
+                            },
+                            success: function(response) {
+                                $('#datatable').DataTable().ajax.reload();
+                                Swal.fire({ title: "Success!", text: response.success, icon: "success", showCancelButton: 0, confirmButtonColor: "#556ee6"});
+                            }
+                        });
+                    } else {
+                        $("#form_status").html(
+                            '<div class="alert alert-warning alert-dismissible fade show" role="alert"><i class="mdi mdi-alert-outline me-2"></i><strong>Cancelled! </strong> Your data is safe <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>'
+                            );
                     }
                 });
             });

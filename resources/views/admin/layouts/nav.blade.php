@@ -8,7 +8,7 @@
                         <img src="{{asset('assets/admin/images/logo.svg')}}" alt="" height="22">
                     </span>
                     <span class="logo-lg">
-                        <img src="{{asset('assets/admin/images/moonplus-logo.png')}}" alt="" height="auto" width="150px">
+                        <img src="{{asset('assets/admin/images/ips-logo.png')}}" alt="" height="auto" width="150px">
                     </span>
                 </a>
                 <a href="{!! url('/dashboard'); !!}" class="logo logo-light">
@@ -16,7 +16,7 @@
                         <img src="{{asset('assets/admin/images/logo-light.svg')}}" alt="" height="22">
                     </span>
                     <span class="logo-lg">
-                        <img src="{{asset('assets/admin/images/moonplus-logo.png')}}" alt="" height="auto" width="150px">
+                        <img src="{{asset('assets/admin/images/ips-logo.png')}}" alt="" height="auto" width="150px">
                     </span>
                 </a>
             </div>
@@ -56,18 +56,21 @@
                     <i class="bx bx-fullscreen"></i>
                 </button>
             </div> --}}
-            {{-- <div class="dropdown d-inline-block">
+            <div class="dropdown d-inline-block">
                 <button type="button" class="btn header-item waves-effect" id="page-header-user-dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    <img class="rounded-circle header-profile-user" src="{{asset('assets/admin/images/favicon.png')}}" alt=" "/>
-                    <span class="d-none d-xl-inline-block ms-1" key="t-henry"> {{ strtoupper($headerData['adminData']->Login_Username) }} </span>
+                    <img class="rounded-circle header-profile-user" src="https://ui-avatars.com/api/{{Auth::user()->name}}" alt=" "/>
+                    <span class="d-none d-xl-inline-block ms-1" key="t-henry"> {{Auth::user()->name}} </span>
                     <i class="mdi mdi-chevron-down d-none d-xl-inline-block"></i>
                 </button>
                 <div class="dropdown-menu dropdown-menu-end">
-                    <a class="dropdown-item" href="{!! url('/lockscreen'); !!}"><i class="bx bx-lock-open font-size-16 align-middle me-1"></i> <span key="t-lock-screen">Lock screen</span></a>
+                    <a class="dropdown-item" href="#"><i class="bx bx-lock-open font-size-16 align-middle me-1"></i> <span key="t-lock-screen">Lock screen</span></a>
                     <div class="dropdown-divider"></div>
-                    <a class="dropdown-item text-danger" href="{!! url('/logout'); !!}"><i class="bx bx-power-off font-size-16 align-middle me-1 text-danger"></i> <span key="t-logout">Logout</span></a>
+                    <a class="dropdown-item text-danger" href="javascript:void" onclick="$('#logout-form').submit();"><i class="bx bx-power-off font-size-16 align-middle me-1 text-danger"></i> <span key="t-logout">Logout</span></a>
+                    <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+                        @csrf
+                    </form>
                 </div>
-            </div> --}}
+            </div>
         </div>
     </div>
 </header>

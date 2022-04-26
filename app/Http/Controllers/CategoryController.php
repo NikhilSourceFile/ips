@@ -45,13 +45,15 @@ class CategoryController extends Controller
          foreach($records as $record){
              $id = $record->id;
              $category = $record->category;
+             $updated=$record->updated_at;
              ($record->status == 1) ? $status = "<span class='badge bg-success'>ACTIVE</span>" : $status = "<span class='badge bg-warning'>DEACTIVE</span>";
-             $edit = '<a href="category-edit-'.$id.'" class="btn btn-primary waves-effect waves-light" role="button"><span class="fas fa-edit"></a>';
+             $edit = '<button class="btn btn-primary waves-effect waves-light editcategory" role="button" data-id="'.$id.'"><span class="fas fa-edit"></button>';
              $delete = '<button class="btn btn-danger waves-effect waves-light deletecategory" type="button" data-id="'.$id.'"><span class="fas fa-trash-alt"></span></button>';
              $data_arr[] = array(
                  "id" => $id,
                  "category" => $category,
                  "status" => $status,
+                 "date"=>$updated->diffForHumans(),
                  "action_edit" => $edit,
                  "action_delete" => $delete
              );
@@ -111,9 +113,9 @@ class CategoryController extends Controller
      * @param  \App\Models\Category  $category
      * @return \Illuminate\Http\Response
      */
-    public function edit(Category $category)
+    public function edit(Request $request)
     {
-        //
+        return Category::find($request->id);
     }
 
     /**
@@ -125,7 +127,15 @@ class CategoryController extends Controller
      */
     public function update(Request $request, Category $category)
     {
-        //
+        $validated = $request->validate([
+            'category' => 'required|unique:categories,category,'.$request->id,
+            'status' => 'required',
+        ]);
+
+
+
+        $update = Category::find($request->id)->update($validated);
+        if($update)return response()->json(['success' => 'Category Added Successfully!','category'=>$update]);
     }
 
     /**
@@ -134,8 +144,13 @@ class CategoryController extends Controller
      * @param  \App\Models\Category  $category
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Category $category)
+    public function destroy(Request $request)
     {
-        //
+        $id = $request->input('id');
+        if(Category::find($id)->delete()){
+            return response()->json(['success' => 'Category Deleted Successfully!']);
+        }else{
+            return response()->json(['success' => 'fail']);
+        }
     }
 }

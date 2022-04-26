@@ -62,6 +62,9 @@
                                         <div class="mb-3">
                                             <label for="username" class="form-label">Username</label>
                                             <input type="email" name="email" class="form-control" placeholder="Enter username" required autofocus>
+                                        @error('email')
+                                        <span class="text-danger">{{$message}}</span>
+                                        @enderror
                                         </div>
                 
                                         <div class="mb-3">
@@ -69,6 +72,9 @@
                                             <div class="input-group auth-pass-inputgroup">
                                                 <input type="password" name="password" class="form-control" placeholder="Enter password" aria-label="Password" aria-describedby="password-addon" required autocomplete="current-password">
                                                 <button class="btn btn-light " type="button" id="password-addon"><i class="mdi mdi-eye-outline"></i></button>
+                                                @error('password')
+                                                <span class="text-danger">{{$message}}</span>
+                                                @enderror
                                             </div>
                                         </div>
 
@@ -106,7 +112,7 @@
                                         </div>
 
                                         <div class="mt-4 text-center">
-                                            <a href="{{ route('password.request') }}" class="text-muted"><i class="mdi mdi-lock me-1"></i> Forgot your password?</a>
+                                            <a href="#" class="text-muted"><i class="mdi mdi-lock me-1"></i> Forgot your password?</a>
                                         </div>
                                     </form>
                                 </div>
@@ -116,7 +122,6 @@
                         <div class="mt-5 text-center">
                             
                             <div>
-                                <p>Don't have an account ? <a href="auth-register.html" class="fw-medium text-primary"> Signup now </a> </p>
                                 <p>© <script>document.write(new Date().getFullYear())</script> IPS. Crafted with <i class="mdi mdi-heart text-danger"></i> by SFS</p>
                             </div>
                         </div>

@@ -47,9 +47,9 @@ class DocumentController extends Controller
             $id = $record->id;
             $category = $record->category;
             $document = $record->document;
-             $copy = '<a href="/get-documents/'.$document.'" target="_blank" class="btn btn-primary waves-effect waves-light" role="button">url</a>' ;
-            $edit = '<a href="category-edit-'.$id.'" class="btn btn-primary waves-effect waves-light" role="button"><span class="fas fa-edit"></a>';
-            $delete = '<button class="btn btn-danger waves-effect waves-light deletecategory" type="button" data-id="'.$id.'"><span class="fas fa-trash-alt"></span></button>';
+             $copy = '<button data-href="/get-documents/'.$document.'" class="btn btn-primary waves-effect waves-light copyLink">Copy</button>' ;
+            $edit = '<button  class="btn btn-primary waves-effect waves-light editdocument" data-id="'.$id.'"><span class="fas fa-edit"></button>';
+            $delete = '<button class="btn btn-danger waves-effect waves-light deleteDocument" data-id="'.$id.'"><span class="fas fa-trash-alt"></span></button>';
             $data_arr[] = array(
                 "id" => $id,
                 "category"=>$category,
@@ -81,7 +81,7 @@ class DocumentController extends Controller
 
     public function getPdf($file){
         $path=public_path('assets/admin/uploads/pdf/'.$file);
-        return response()->download($path);
+        return response()->file($path);
     }
 
     /**
@@ -94,16 +94,21 @@ class DocumentController extends Controller
     {
         $validated = $request->validate([
             'category_id' => 'required|integer',
-            'document_pdf' => 'required|mimes:pdf|max:4000',
+            'document_pdf' => 'required|mimes:pdf,jpeg,png,jpg,gif,svg,doc,docx,webp|max:10000',
             'file_name'=> 'required|unique:documents',
         ]);
        
       $uploadedFile = $request->file('document_pdf');
-      $filename = trim($request->file_name). '.pdf';
+      
+      $extension = $uploadedFile->clientExtension();
+      $filename = trim($request->file_name).'.'.$extension;
       $uploadedFile->move(public_path('assets/admin/uploads/pdf'), $filename);
       $validated['document']=$filename;
       $create = Document::create($validated);
-      if($create)return response()->json(['success' => 'File Added Successfully!','category'=>$create]);
+      if($create){   return response()->json(['success' => 'Document Added Successfully!']);
+    }else{
+        return response()->json(['success' => 'fail']);
+    }
     }
 
     /**
@@ -123,9 +128,11 @@ class DocumentController extends Controller
      * @param  \App\Models\Document  $document
      * @return \Illuminate\Http\Response
      */
-    public function edit(Document $document)
+    public function edit(Request $request)
     {
-        //
+       $document= Document::join('categories','documents.category_id','categories.id')->select('documents.*','category')->where('documents.id',$request->id)->first();
+    $categories=Category::where('id','!=',$document->category_id)->select('id','category')->get();
+    return response()->json(['document'=>$document,'categories'=>$categories]);
     }
 
     /**
@@ -135,9 +142,30 @@ class DocumentController extends Controller
      * @param  \App\Models\Document  $document
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Document $document)
+    public function update(Request $request)
     {
-        //
+        $validated = $request->validate([
+            'category_id' => 'required|integer',
+            'document_pdf' => 'nullable|mimes:pdf,jpeg,png,jpg,gif,svg,doc,docx,webp|max:10000',
+            'file_name'=> 'required|unique:documents,file_name,'.$request->id,
+        ]);
+       
+      $uploadedFile = $request->file('document_pdf');
+      if($uploadedFile){
+        $extension = $uploadedFile->clientExtension();
+        $filename = trim($request->file_name).'.'.$extension;
+        $uploadedFile->move(public_path('assets/admin/uploads/pdf'), $filename);
+        $validated['document']=$filename;
+      }
+     else{
+        $validated['document']=$request->old_file;
+     }
+      
+      $create = Document::find($request->id)->update($validated);
+      if($create){   return response()->json(['success' => 'Document Updated Successfully!']);
+    }else{
+        return response()->json(['success' => 'fail']);
+    }
     }
 
     /**
@@ -146,8 +174,13 @@ class DocumentController extends Controller
      * @param  \App\Models\Document  $document
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Document $document)
+    public function destroy(Request $request)
     {
-        //
+        $id = $request->input('id');
+        if(Document::find($id)->delete()){
+            return response()->json(['success' => 'Document Deleted Successfully!']);
+        }else{
+            return response()->json(['success' => 'fail']);
+        }
     }
 }
